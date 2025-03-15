@@ -1,15 +1,16 @@
 {
   "name": "kubeeyeapi",
   "version": "1.0.0",
-  "main": "main.js",
+  "main": "main.mjs",
   "scripts": {
     "prestart": "npm install",
-    "start": "node ./main.js"
+    "start": "node ./main.mjs"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@kubernetes/client-node": "^1.1.0",
     "axios": "^1.7.9",
     "dotenv": "^16.4.7",
     "express": "^4.21.2"

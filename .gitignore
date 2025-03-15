@@ -4,3 +4,6 @@ Storage/
 .envDev
 .envProd
 .env
+ca.crt
+client.crt
+client.key

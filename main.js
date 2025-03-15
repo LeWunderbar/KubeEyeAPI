@@ -19,25 +19,26 @@ const getHeaders = () => {
     };
 };
 
-app.get('/:namespace/:podName', async (req, res) => {
-    const { namespace, podName } = req.params;
-
+app.get('/:namespace/:appname', async (req, res) => {
     try {
-        const response = await axios.get(
-            `${kubeApiUrl}/api/v1/namespaces/${namespace}/pods/${podName}`,
-            { headers: getHeaders() }
-        );
-
-        const podStatus = response.data.status.phase;
-
-        if (podStatus === 'Running') {
-            res.json({ status: 'alive' });
+        const { namespace, appname } = req.params;
+        const url = `${kubeApiUrl}/apis/apps/v1/namespaces/${namespace}/deployments/${appname}`;
+        
+        const response = await axios.get(url, { headers: getHeaders(), httpsAgent: new https.Agent({ rejectUnauthorized: false }) });
+        const deployment = response.data;
+        
+        const availableCondition = deployment.status.conditions.find(c => c.type === "Available");
+        const readyReplicas = deployment.status.readyReplicas || 0;
+        const expectedReplicas = deployment.spec.replicas || 0;
+        
+        if (availableCondition?.status === "True" && readyReplicas === expectedReplicas) {
+            return res.status(200).json({ status: "up" });
         } else {
-            res.json({ status: 'dead' });
+            return res.status(504).json({ status: "down" });
         }
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ status: 'dead' });
+        console.error("Error fetching deployment status:", error);
+        return res.status(500).json({ status: "error" });
     }
 });
 

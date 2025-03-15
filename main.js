@@ -22,22 +22,26 @@ const getHeaders = () => {
 app.get('/:namespace/:appname', async (req, res) => {
     try {
         const { namespace, appname } = req.params;
-        const labelSelector = `app=${appname},app.kubernetes.io/name=${appname}`;
+        
+        const url1 = `${kubeApiUrl}/api/v1/namespaces/${namespace}/pods?labelSelector=app=${appname}`;
+        const url2 = `${kubeApiUrl}/api/v1/namespaces/${namespace}/pods?labelSelector=app.kubernetes.io/name=${appname}`;
 
-        const url = `${kubeApiUrl}/api/v1/namespaces/${namespace}/pods?labelSelector=${labelSelector}`;
+        const [response1, response2] = await Promise.all([
+            axios.get(url1, { headers: getHeaders(), httpsAgent: new https.Agent({ rejectUnauthorized: false }) }),
+            axios.get(url2, { headers: getHeaders(), httpsAgent: new https.Agent({ rejectUnauthorized: false }) })
+        ]);
 
-        const response = await axios.get(url, {
-            headers: getHeaders(),
-            httpsAgent: new https.Agent({ rejectUnauthorized: false })
-        });
+        const allPods = [
+            ...response1.data.items,
+            ...response2.data.items
+        ];
+        const uniquePods = [...new Set(allPods.map(pod => pod.metadata.name))];
 
-        if (response.data.items.length === 0) {
+        if (uniquePods.length === 0) {
             return res.status(504).json({ status: "down" });
         }
 
-        const podNames = response.data.items.map(pod => pod.metadata.name);
-        
-        return res.status(200).json({ status: "up", pods: podNames });
+        return res.status(200).json({ status: "up", pods: uniquePods });
 
     } catch (error) {
         console.error(error);

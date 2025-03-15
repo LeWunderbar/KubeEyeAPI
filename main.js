@@ -22,7 +22,7 @@ const getHeaders = () => {
 app.get('/:namespace/:appname', async (req, res) => {
     try {
         const { namespace, appname } = req.params;
-        
+
         const url1 = `${kubeApiUrl}/api/v1/namespaces/${namespace}/pods?labelSelector=app=${appname}`;
         const url2 = `${kubeApiUrl}/api/v1/namespaces/${namespace}/pods?labelSelector=app.kubernetes.io/name=${appname}`;
 
@@ -41,7 +41,7 @@ app.get('/:namespace/:appname', async (req, res) => {
             return res.status(504).json({ status: "down" });
         }
 
-        return res.status(200).json({ status: "up", pods: uniquePods });
+        return res.status(200).json({ status: "up"});
 
     } catch (error) {
         console.error(error);

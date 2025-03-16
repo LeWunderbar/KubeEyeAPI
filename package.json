@@ -1,10 +1,10 @@
 {
   "name": "kubeeyeapi",
   "version": "1.0.0",
-  "main": "main.mjs",
+  "main": "main.js",
   "scripts": {
     "prestart": "npm install",
-    "start": "node ./main.mjs"
+    "start": "node ./main.js"
   },
   "author": "",
   "license": "ISC",
